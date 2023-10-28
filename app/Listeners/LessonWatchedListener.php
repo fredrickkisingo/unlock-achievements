@@ -24,9 +24,12 @@ class LessonWatchedListener
         $user = $event->user;
         $lesson = $event->lesson;
 
+
         // Increment the lessons watched counter for the user (you should have a 'lessons_watched' column in your users table).
         $user->increment('lessons_watched');
 
+        // Attach the lesson to user.
+        $user->lessons()->attach($lesson->id,['watched' => true]);
         // Check and unlock relevant achievements.
         if ($user->lessons_watched === 1) {
             $this->unlockAchievement($user, 'First Lesson Watched');
@@ -74,7 +77,7 @@ class LessonWatchedListener
         // Check if the user has not already unlocked this badge to avoid duplicates.
         if (!$user->badges->pluck('name')->contains($badgeName)) {
             // Get the badge by name and attach it to the user.
-            $this->unlockTraitBadge($user, 'Master');
+            $this->unlockTraitBadge($user, $badgeName);
 
         }
     }

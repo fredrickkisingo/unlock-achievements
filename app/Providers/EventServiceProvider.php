@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use App\Events\CommentWritten;
+use App\Events\LessonWatched;
+use App\Listeners\AchievementUnlockedListener;
+use App\Listeners\BadgeUnlockedListener;
+use App\Models\Lesson;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Auth\Listeners\SendEmailVerificationNotification;
 use Illuminate\Foundation\Support\Providers\EventServiceProvider as ServiceProvider;
@@ -18,6 +23,13 @@ class EventServiceProvider extends ServiceProvider
         Registered::class => [
             SendEmailVerificationNotification::class,
         ],
+
+        LessonWatched::class=>[
+            AchievementUnlockedListener::class
+        ],
+        CommentWritten::class=>[
+            AchievementUnlockedListener::class,
+        ]
     ];
 
     /**
