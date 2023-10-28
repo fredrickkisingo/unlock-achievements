@@ -10,6 +10,8 @@ class Comment extends Model
 {
     use HasFactory;
 
+    public mixed $user = null;
+
     /**
      * The attributes that are mass assignable.
      *
