@@ -5,24 +5,28 @@ namespace App\Listeners;
 use App\Events\AchievementUnlockedEvent;
 use App\Events\BadgeUnlockedEvent;
 use App\Models\Achievement;
+use App\Models\Comment;
 use App\Traits\BadgeUnlockTrait;
 use App\Models\Badge;
 use App\Models\User;
-use App\Events\CommentWritten;
 class CommentWrittenListener
 {
     use BadgeUnlockTrait;
+
     /**
      * Handle the Comment written event.
+     * @throws \JsonException
      */
 
-    public function handle(CommentWritten $event): void
+    public function handle( $event): void
     {
 
         $comment = $event->comment;
 
         // Retrieve the user associated with the comment
-        $user = $comment->user;
+        $user_id= Comment::where('body',$comment->body)->value('user_id');
+
+        $user = User::where('id',$user_id)->first();
 
         // Increment the comments written counter for the user (you should have a 'comments_written' column in your users' table).
         $user->increment('comments_written');
@@ -49,6 +53,7 @@ class CommentWrittenListener
 
         // Check if the user has unlocked enough achievements for a new badge.
         $achievementsUnlocked = $user->achievements->count();
+
 
         if ($achievementsUnlocked >= 10) {
             $this->unlockBadge($user, 'Master');
@@ -82,7 +87,7 @@ class CommentWrittenListener
         // Check if the user has not already unlocked this badge to avoid duplicates.
         if (!$user->badges->pluck('name')->contains($badgeName)) {
             // Get the badge by name and attach it to the user.
-            $this->unlockTraitBadge($user, 'Master');
+            $this->unlockTraitBadge($user, $badgeName);
 
         }
     }}
