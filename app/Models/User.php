@@ -72,15 +72,66 @@ class User extends Authenticatable
 
     public function achievements(): BelongsToMany
     {
-        return $this->belongsToMany(Achievement::class,'user_achievements')->withTimestamps();
+        return $this->belongsToMany(Achievement::class,'user_achievements');
     }
 
 
 
     public function badges(): BelongsToMany
     {
-        return $this->belongsToMany(Badge::class, 'user_badges')->withTimestamps();
+        return $this->belongsToMany(Badge::class, 'user_badges');
 
+    }
+
+    public function currentBadge(): string
+    {
+
+        $achievementsCount = $this->achievements()->count();
+
+        if ($achievementsCount >= 10) {
+            return 'Master';
+        }
+
+        if ($achievementsCount >= 8) {
+            return 'Advanced';
+        }
+
+        if ($achievementsCount >= 4) {
+            return 'Intermediate';
+        }
+
+        return 'Beginner';
+    }
+    public function nextBadge(): string
+    {
+        $achievementsCount = $this->achievements()->count();
+
+        if ($achievementsCount >= 10) {
+            return 'You have already earned the highest badge - Master';
+        } elseif ($achievementsCount >= 8) {
+            return 'Next badge: Master (Complete 10 achievements)';
+        } elseif ($achievementsCount >= 4) {
+            $additionalAchievementsRequired = 10 - $achievementsCount;
+            return "Next badge: Advanced (Complete 10 achievements, $additionalAchievementsRequired more to go)";
+        } else {
+            $additionalAchievementsRequired = 4 - $achievementsCount;
+            return "Next badge: Intermediate (Complete 4 achievements, $additionalAchievementsRequired more to go)";
+        }
+    }
+
+    public function remainingAchievementsToUnlockNextBadge(): ?int
+    {
+        $achievementsCount = $this->achievements()->count();
+
+        if ($achievementsCount >= 10) {
+            return 0; // User has already earned the highest badge.
+        } elseif ($achievementsCount >= 8) {
+            return 10 - $achievementsCount; // Additional achievements required for the "Master" badge.
+        } elseif ($achievementsCount >= 4) {
+            return 10 - $achievementsCount; // Additional achievements required for the "Advanced" badge.
+        } else {
+            return 4 - $achievementsCount; // Additional achievements required for the "Intermediate" badge.
+        }
     }
 }
 
